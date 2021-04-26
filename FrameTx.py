@@ -1,8 +1,6 @@
 from scapy.all import *
 import threading
 
-thread_num = 100
-
 class MyThread(threading.Thread):
     def __init__(self,func,args,name=''):
         threading.Thread.__init__(self)
@@ -29,28 +27,28 @@ payload = extra_ctrl + '12345678901234567890123456789012345678901234567890123456
 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\
 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890'
 
+def stopfilter(x):
+    if x[Ether].src == '23.212.52.66':
+        return True
+    else:
+        return False
 
 def send_packet(ether):
     sendp(ether/LLC(dsap=0x0e, ssap=0x0f, ctrl=0x10)/Raw(payload.encode('ascii')))
 
 def main():
     ether = Ether()
-    ether.dst = "28:F1:0E:0D:F0:A6"
+    ether.dst = "FF:FF:FF:FF:FF:FF"
     ether.type = 1404
     ether.show()
 
     threads=[]        #deposit thresds
-    #nloops=range(len(loops))
+    sniff(count=0, store=1, stop_filter=stopfilter)
 
-    for i in range(thread_num):    #create an instance of an object
-        t = MyThread(send_packet,(ether),send_packet.__name__)
-        threads.append(t)
+    t = MyThread(send_packet,(ether),send_packet.__name__)
+    threads.append(t)
 
-    for i in range(thread_num):    #start threads
-        threads[i].start()
-
-    #for i in range(thread_num):    #wait for all
-    #    threads[i].join()#threads to finish
+    threads[0].start()
 
 if __name__ == '__main__':
     main()
